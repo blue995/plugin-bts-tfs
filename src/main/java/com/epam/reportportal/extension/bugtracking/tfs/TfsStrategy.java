@@ -20,45 +20,20 @@ import com.epam.reportportal.extension.PluginCommand;
 import com.epam.reportportal.extension.ReportPortalExtensionPoint;
 import com.epam.reportportal.extension.bugtracking.BtsConstants;
 import com.epam.reportportal.extension.bugtracking.BtsExtension;
-import com.epam.reportportal.extension.bugtracking.InternalTicketAssembler;
-import com.epam.ta.reportportal.binary.impl.AttachmentDataStoreService;
-import com.epam.ta.reportportal.dao.LogRepository;
-import com.epam.ta.reportportal.dao.TestItemRepository;
 import com.epam.ta.reportportal.entity.integration.Integration;
 import com.epam.ta.reportportal.exception.ReportPortalException;
-import com.epam.ta.reportportal.filesystem.DataEncoder;
-import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.epam.ta.reportportal.ws.model.externalsystem.PostFormField;
 import com.epam.ta.reportportal.ws.model.externalsystem.PostTicketRQ;
 import com.epam.ta.reportportal.ws.model.externalsystem.Ticket;
-import com.google.common.base.Suppliers;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.ParseException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
 import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.*;
-import java.util.function.Supplier;
 
 import static com.epam.ta.reportportal.ws.model.ErrorType.UNABLE_INTERACT_WITH_INTEGRATION;
-import java.lang.reflect.Type;
 /**
  * @author Tobias Blaufuss
  */
@@ -71,8 +46,6 @@ public class TfsStrategy implements ReportPortalExtensionPoint, BtsExtension {
 
 	@Value("${rp.bts.tfs.service.url}")
 	private String externalTfsServiceUrl;
-	
-	private final Gson gson = new Gson();
 	private final IRestApi api = new SpringRestApi();
 
 

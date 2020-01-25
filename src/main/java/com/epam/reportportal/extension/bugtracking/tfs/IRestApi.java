@@ -18,6 +18,9 @@ package com.epam.reportportal.extension.bugtracking.tfs;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author Tobias Blaufuss
+ */
 public interface IRestApi {
     <T> T get(String url, Map<String, String> urlParameters, Class<T> responseType) throws RestApiException;
     <T> List<T> getAsList(String url, Map<String, String> urlParameters, Class<T> responseType) throws RestApiException;

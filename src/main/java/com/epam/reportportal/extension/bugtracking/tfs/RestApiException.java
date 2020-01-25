@@ -15,11 +15,11 @@
  */
 package com.epam.reportportal.extension.bugtracking.tfs;
 
+/**
+ * @author Tobias Blaufuss
+ */
 public class RestApiException extends Exception {
 
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = 1L;
     
     public RestApiException(String message, Throwable e) {
