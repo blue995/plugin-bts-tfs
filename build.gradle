@@ -41,7 +41,6 @@ dependencies {
         compile 'com.github.reportportal:commons-model:5.0.0-RC-5'
     }
 
-    compile 'com.rallydev.rest:rally-rest-api:2.2.1'
     compile 'net.oauth.core:oauth:20090617'
     compile 'net.oauth.core:oauth-httpclient4:20090913'
     compile 'org.apache.tika:tika-core:1.14'
