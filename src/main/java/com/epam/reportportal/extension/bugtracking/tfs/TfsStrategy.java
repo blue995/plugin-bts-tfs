@@ -48,6 +48,7 @@ import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -67,9 +68,13 @@ public class TfsStrategy implements ReportPortalExtensionPoint, BtsExtension {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(TfsStrategy.class);
 
+
+	@Value("${rp.bts.tfs.service.url}")
+	private String externalTfsServiceUrl;
+	
 	private final Gson gson = new Gson();
 	private final IRestApi api = new SpringRestApi();
-	private static final String EXTERNAL_API_URI = "https://myurl.com";
+
 
 	@Override
 	public Map<String, ?> getPluginParams() {
@@ -173,7 +178,7 @@ public class TfsStrategy implements ReportPortalExtensionPoint, BtsExtension {
 	}
 
 	private String getUrl(String relativePath) {
-		return EXTERNAL_API_URI + relativePath;
+		return externalTfsServiceUrl + relativePath;
 	}
 
 	private Map<String, String> getUrlParameters(Integration integration) {
