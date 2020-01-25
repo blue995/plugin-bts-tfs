@@ -27,6 +27,7 @@ import com.epam.ta.reportportal.dao.TestItemRepository;
 import com.epam.ta.reportportal.entity.integration.Integration;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.filesystem.DataEncoder;
+import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.epam.ta.reportportal.ws.model.externalsystem.PostFormField;
 import com.epam.ta.reportportal.ws.model.externalsystem.PostTicketRQ;
 import com.epam.ta.reportportal.ws.model.externalsystem.Ticket;
@@ -58,7 +59,7 @@ import java.util.function.Supplier;
 import static com.epam.ta.reportportal.ws.model.ErrorType.UNABLE_INTERACT_WITH_INTEGRATION;
 import java.lang.reflect.Type;
 /**
- * @author Dzmitry_Kavalets
+ * @author Tobias Blaufuss
  */
 @Extension
 @Component
@@ -67,19 +68,8 @@ public class TfsStrategy implements ReportPortalExtensionPoint, BtsExtension {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TfsStrategy.class);
 
 	private final Gson gson = new Gson();
+	private final IRestApi api = new SpringRestApi();
 	private static final String EXTERNAL_API_URI = "https://myurl.com";
-
-	@Autowired
-	private AttachmentDataStoreService attachmentDataStoreService;
-
-	@Autowired
-	private TestItemRepository testItemRepository;
-
-	@Autowired
-	private LogRepository logRepository;
-
-	@Autowired
-	private DataEncoder dataEncoder;
 
 	@Override
 	public Map<String, ?> getPluginParams() {
@@ -96,142 +86,105 @@ public class TfsStrategy implements ReportPortalExtensionPoint, BtsExtension {
 		return IntegrationGroupEnum.BTS;
 	}
 
-	private final Supplier<InternalTicketAssembler> ticketAssembler = Suppliers.memoize(() -> new InternalTicketAssembler(logRepository,
-			testItemRepository,
-			attachmentDataStoreService,
-			dataEncoder
-	));
-
 	@Override
 	public boolean testConnection(final Integration integration) {
-		final HttpClient client = HttpClientBuilder.create().build();
 		try {
-			final URIBuilder uriBuilder = getUriWithParams(integration, "/api/welcome");
-			final URI uri = uriBuilder.build();
-			final HttpResponse response = client.execute(new HttpGet(uri));
-			final Boolean result = getResponseAsObject(response, Boolean.class);
-			if(result != null) {
-				return result;
+			String url = getUrl("/api/welcome");
+			Map<String, String> urlParameters = getUrlParameters(integration);
+			final Boolean result = api.get(url , urlParameters, Boolean.class);
+			if(result == null) {
+				throw new ReportPortalException(UNABLE_INTERACT_WITH_INTEGRATION, "Check of TFS server returned null.");
 			}
-		} catch (URISyntaxException | IOException e) {
+			return result;
+		} catch (RestApiException e) {
 			e.printStackTrace();
 			LOGGER.error(e.getMessage(), e);
+			throw new ReportPortalException(UNABLE_INTERACT_WITH_INTEGRATION, e.getMessage());
 		}
-		return false;
 	}
 
 	@Override
 	public Optional<Ticket> getTicket(final String id, final Integration integration) {
-		final HttpClient client = HttpClientBuilder.create().build();
 		try {
-			final URIBuilder uriBuilder = getUriWithParams(integration, "/api/ticket/" + id);
-			final URI uri = uriBuilder.build();
-			final HttpResponse response = client.execute(new HttpGet(uri));
-			final Ticket result = getResponseAsObject(response, Ticket.class);
-			if(result != null) {
-				return Optional.of(result);
+			final String url = getUrl("/api/ticket/" + id);
+			final Map<String, String> urlParameters = getUrlParameters(integration);
+			final Ticket result = api.get(url, urlParameters, Ticket.class);
+			if(result == null) {
+				throw new ReportPortalException(UNABLE_INTERACT_WITH_INTEGRATION, "GetTicket from TFS server returned null.");
 			}
-		} catch (URISyntaxException | IOException e) {
+			return Optional.of(result);
+		} catch (RestApiException e) {
 			e.printStackTrace();
 			LOGGER.error(e.getMessage(), e);
+			throw new ReportPortalException(UNABLE_INTERACT_WITH_INTEGRATION, e.getMessage());
 		}
-		return Optional.empty();
 	}
 
 	@Override
 	public Ticket submitTicket(final PostTicketRQ ticketRQ, final Integration integration) {
-		final HttpClient client = HttpClientBuilder.create().build();
 		try {
-			final URIBuilder uriBuilder = getUriWithParams(integration, "/api/ticket/");
-			final URI uri = uriBuilder.build();
-
-			final HttpPost httpPost = new HttpPost(uri);
-			final HttpEntity entity = new StringEntity(gson.toJson(ticketRQ));
-			httpPost.setEntity(entity);
-			final HttpResponse response = client.execute(httpPost);
-			final Ticket result = getResponseAsObject(response, Ticket.class);
-			if(result != null) {
-				return result;
+			final String url = getUrl("/api/ticket");
+			final Map<String, String> urlParameters = getUrlParameters(integration);
+			final Ticket result = api.post(url, urlParameters, ticketRQ, Ticket.class);
+			if(result == null) {
+				throw new ReportPortalException(UNABLE_INTERACT_WITH_INTEGRATION, "SubmitTicket from TFS server returned null.");
 			}
-		} catch (URISyntaxException | IOException e) {
+			return result;
+		} catch (RestApiException e) {
 			e.printStackTrace();
 			LOGGER.error(e.getMessage(), e);
+			throw new ReportPortalException(UNABLE_INTERACT_WITH_INTEGRATION, e.getMessage());
 		}
-		return null;
 	}
 
 	@Override
 	public List<PostFormField> getTicketFields(final String ticketType, final Integration details) {
-		final HttpClient client = HttpClientBuilder.create().build();
 		try {
-			final URIBuilder uriBuilder = getUriWithParams(details, "/api/ticketfields/");
-			uriBuilder.addParameter("type", ticketType);
-			final URI uri = uriBuilder.build();
-			final HttpResponse response = client.execute(new HttpGet(uri));
-			
-			final List<PostFormField> result = getResponseAsList(response, PostFormField.class);
-			if(result != null) {
-				return result;
+			final String url = getUrl("/api/ticketfields");
+			final Map<String, String> urlParameters = getUrlParameters(details);
+			urlParameters.put("type", ticketType);
+			final List<PostFormField> result = api.getAsList(url, urlParameters, PostFormField.class);
+			if(result == null) {
+				throw new ReportPortalException(UNABLE_INTERACT_WITH_INTEGRATION, "GetTicketFields from TFS server returned null.");
 			}
-		} catch (URISyntaxException | IOException e) {
+			return result;
+		} catch (RestApiException e) {
 			e.printStackTrace();
 			LOGGER.error(e.getMessage(), e);
+			throw new ReportPortalException(UNABLE_INTERACT_WITH_INTEGRATION, e.getMessage());
 		}
-		return null;
 	}
 
 	@Override
 	public List<String> getIssueTypes(final Integration integration) {
-		final HttpClient client = HttpClientBuilder.create().build();
 		try {
-			final URIBuilder uriBuilder = getUriWithParams(integration, "/api/issuetypes");
-			final URI uri = uriBuilder.build();
-			final HttpResponse response = client.execute(new HttpGet(uri));
-
-			final List<String> result = getResponseAsList(response, String.class);
-			if(result != null) {
-				return result;
+			final String url = getUrl("/api/issuetypes");
+			final Map<String, String> urlParameters = getUrlParameters(integration);
+			final List<String> result = api.getAsList(url, urlParameters, String.class);
+			if(result == null) {
+				throw new ReportPortalException(UNABLE_INTERACT_WITH_INTEGRATION, "GetIssueTypes from TFS server returned null.");
 			}
-		} catch (URISyntaxException | IOException e) {
+			return result;
+		} catch (RestApiException e) {
 			e.printStackTrace();
 			LOGGER.error(e.getMessage(), e);
+			throw new ReportPortalException(UNABLE_INTERACT_WITH_INTEGRATION, e.getMessage());
 		}
-		return null;
 	}
 
-	private URIBuilder getUriWithParams(final Integration integration, final String relativePath) throws URISyntaxException {
-		final URI uri = new URI(EXTERNAL_API_URI + relativePath);
-		final URIBuilder uriBuilder = new URIBuilder(uri);
-		
+	private String getUrl(String relativePath) {
+		return EXTERNAL_API_URI + relativePath;
+	}
+
+	private Map<String, String> getUrlParameters(Integration integration) {
+		Map<String, String> urlParameters = new HashMap<>();
 		final String url = BtsConstants.URL.getParam(integration.getParams(), String.class)
 		.orElseThrow(() -> new ReportPortalException(UNABLE_INTERACT_WITH_INTEGRATION, "Tfs Project value cannot be NULL"));
-		uriBuilder.addParameter("uri", url);
+		urlParameters.put("uri", url);
 
 		final String project = BtsConstants.PROJECT.getParam(integration.getParams(), String.class)
 				.orElseThrow(() -> new ReportPortalException(UNABLE_INTERACT_WITH_INTEGRATION, "Tfs Project value cannot be NULL"));
-		uriBuilder.addParameter("project", project);
-
-		return uriBuilder;
-	}
-
-	private <T> T getResponseAsObject(final HttpResponse response, final Class<T> clazz) throws IOException, ParseException{
-		final HttpEntity entity = response.getEntity();
-		if(entity == null) {
-			return null;
-		}
-		final String jsonString = EntityUtils.toString(entity);
-		final T result = gson.fromJson(jsonString, clazz);
-		return result;
-	}
-
-	private <T> List<T> getResponseAsList(final HttpResponse response, final Class<T> clazz) throws IOException, ParseException{
-		final HttpEntity entity = response.getEntity();
-		if(entity == null) {
-			return null;
-		}
-		final String jsonString = EntityUtils.toString(entity);
-		final Type listType = new TypeToken<ArrayList<T>>(){}.getType();
-		final List<T> result = gson.fromJson(jsonString, listType);
-		return result;
+		urlParameters.put("project", project);
+		return urlParameters;
 	}
 }
