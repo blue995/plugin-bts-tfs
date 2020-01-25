@@ -9,7 +9,7 @@ apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/5.0.0
 
 project.ext {
     releaseMode = project.hasProperty("releaseMode")
-    pluginID = "rally"
+    pluginID = "tfs"
     pluginsDir = "$buildDir/plugins"
 }
 
@@ -45,6 +45,7 @@ dependencies {
     compile 'net.oauth.core:oauth:20090617'
     compile 'net.oauth.core:oauth-httpclient4:20090913'
     compile 'org.apache.tika:tika-core:1.14'
+    implementation 'com.google.code.gson:gson'
 }
 
 wrapper {
@@ -57,8 +58,8 @@ jar {
                 "Class-Path": configurations.compile.collect { it.getName() }.join(' '),
                 "Plugin-Id": "${pluginID}",
                 "Plugin-Version": "${project.version}",
-                "Plugin-Provider": "Andrei Varabyeu",
-                "Plugin-Class": "com.epam.reportportal.extension.bugtracking.rally.RallyStrategyPlugin",
+                "Plugin-Provider": "Tobias Blaufuss",
+                "Plugin-Class": "com.epam.reportportal.extension.bugtracking.tfs.TfsStrategyPlugin",
 //                "Plugin-Dependencies": ""
         )
     }
@@ -68,7 +69,6 @@ shadowJar {
     zip64 true
     dependencies {
         include(dependency('com.google.guava:guava'))
-        include(dependency('com.rallydev.rest:rally-rest-api'))
         include(dependency('com.google.code.gson:gson'))
     }
 }

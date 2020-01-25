@@ -13,33 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.epam.reportportal.extension.bugtracking.rally;
+package com.epam.reportportal.extension.bugtracking.tfs;
 
-import com.google.gson.annotations.SerializedName;
+import org.pf4j.Plugin;
+import org.pf4j.PluginWrapper;
 
 /**
- * @author Dzmitry_Kavalets
+ * @author <a href="mailto:tobias.blaufuss@outlook.de">Tobias Blaufuss</a>
  */
-public class AllowedAttributeValue extends RallyObject {
-	@SerializedName("Count")
-	private int count;
-
-	@SerializedName("StringValue")
-	private String stringValue;
-
-	public String getStringValue() {
-		return stringValue;
-	}
-
-	public void setStringValue(String stringValue) {
-		this.stringValue = stringValue;
-	}
-
-	public int getCount() {
-		return count;
-	}
-
-	public void setCount(int count) {
-		this.count = count;
+public class TfsStrategyPlugin extends Plugin {
+	/**
+	 * Constructor to be used by plugin manager for plugin instantiation.
+	 * Your plugins have to provide constructor with this exact signature to
+	 * be successfully loaded by manager.
+	 *
+	 * @param wrapper
+	 */
+	public TfsStrategyPlugin(PluginWrapper wrapper) {
+		super(wrapper);
 	}
 }
