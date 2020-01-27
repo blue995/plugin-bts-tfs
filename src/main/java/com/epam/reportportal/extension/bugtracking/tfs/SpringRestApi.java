@@ -36,38 +36,61 @@ public class SpringRestApi implements IRestApi {
     
     @Override
     public <T> T get(String url, Map<String, String> urlParameters, Class<T> responseType) throws RestApiException {
+        final String uri = getUriBuilder(url, urlParameters).toUriString();
+        final RestTemplate template = new RestTemplate();
         try {
-            final RestTemplate template = new RestTemplate();
-            final T result = template.getForObject(getUriBuilder(url, urlParameters).toUriString(), responseType);
+            final T result = template.getForObject(uri, responseType);
             return result;
         } catch (RestClientException e) {
-            LOGGER.error(e.getMessage(), e);
-            throw new RestApiException(e.getMessage(), e);
+            final StringBuilder builder = new StringBuilder();
+            builder.append(e.getMessage());
+            builder.append(", URI:");
+            builder.append(uri);
+            final String errorMessage = builder.toString();
+            LOGGER.error(errorMessage, e);
+            throw new RestApiException(errorMessage, e);
         }
     }
 
     @Override
     public <T> List<T> getAsList(String url, Map<String, String> urlParameters, Class<T> responseType) throws RestApiException {
+        final String uri = getUriBuilder(url, urlParameters).toUriString();
+        final RestTemplate template = new RestTemplate();
+        final HttpMethod httpMethod = HttpMethod.GET;
         try {
-            final RestTemplate template = new RestTemplate();
-            final ResponseEntity<List<T>> response = template.exchange(getUriBuilder(url, urlParameters).toUriString(), HttpMethod.POST, null, new ParameterizedTypeReference<List<T>>(){});
+            final ResponseEntity<List<T>> response = template.exchange(uri, httpMethod, null, new ParameterizedTypeReference<List<T>>(){});
             final List<T> result = response.getBody();
             return result;
         } catch (RestClientException e) {
-            LOGGER.error(e.getMessage(), e);
-            throw new RestApiException(e.getMessage(), e);
+            final StringBuilder builder = new StringBuilder();
+            builder.append(e.getMessage());
+            builder.append(", URI:");
+            builder.append(uri);
+            builder.append(", Method:");
+            builder.append(httpMethod);
+            final String errorMessage = builder.toString();
+            LOGGER.error(errorMessage, e);
+            throw new RestApiException(errorMessage, e);
         }
     }
 
     @Override
     public <T, B> T post(String url, Map<String, String> urlParameters, B body, Class<T> responseType) throws RestApiException {
+        final String uri = getUriBuilder(url, urlParameters).toUriString();
+        final RestTemplate template = new RestTemplate();
         try {
-            final RestTemplate template = new RestTemplate();
-            final T result = template.postForObject(getUriBuilder(url, urlParameters).toUriString(), body, responseType);
+            final T result = template.postForObject(uri, body, responseType);
             return result;
         } catch (RestClientException e) {
-            LOGGER.error(e.getMessage(), e);
-            throw new RestApiException(e.getMessage(), e);
+            final StringBuilder builder = new StringBuilder();
+            builder.append(e.getMessage());
+            builder.append(", URI:");
+            builder.append(uri);
+            builder.append(", Body:");
+            builder.append(body);
+            final String errorMessage = builder.toString();
+            LOGGER.error(errorMessage, e);
+            throw new RestApiException(errorMessage, e);
         }
     }
 
