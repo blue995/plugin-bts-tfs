@@ -5,6 +5,7 @@ plugins {
 }
 
 project.ext {
+    dependencyRepos = ["plugin-api", "commons-bom"]
     releaseMode = project.hasProperty("releaseMode")
     pluginID = "tfs"
     pluginsDir = "$buildDir/plugins"
@@ -14,6 +15,7 @@ def scriptsUrl = 'https://raw.githubusercontent.com/reportportal/gradle-scripts/
         (releaseMode ? getProperty('scripts.version') : 'develop')
 
 apply from: scriptsUrl + '/release-fat.gradle'
+apply from: scriptsUrl + '/signing.gradle'
 apply from: scriptsUrl + '/build-quality.gradle'
 
 
@@ -54,6 +56,8 @@ dependencies {
 wrapper {
     gradleVersion = '6.0'
 }
+
+//generatePomFileForShadowPublication { pom.packaging = "jar" }
 
 jar {
     manifest {
