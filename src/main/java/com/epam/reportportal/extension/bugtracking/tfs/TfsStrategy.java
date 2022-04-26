@@ -163,6 +163,19 @@ public class TfsStrategy implements ReportPortalExtensionPoint, BtsExtension {
 		final String project = BtsConstants.PROJECT.getParam(integration.getParams(), String.class)
 				.orElseThrow(() -> new ReportPortalException(UNABLE_INTERACT_WITH_INTEGRATION, "Tfs Project value cannot be NULL"));
 		urlParameters.put("project", project);
+
+		final String userName = BtsConstants.USER_NAME.getParam(integration.getParams(), String.class)
+		.orElseThrow(() -> new ReportPortalException(UNABLE_INTERACT_WITH_INTEGRATION, "Tfs User value cannot be NULL"));
+		urlParameters.put("currentUser", userName);
+
+		if(integration.getParams().getParams().containsKey("attachmentUrl")){
+		 	urlParameters.put("attachmentUrl", integration.getParams().getParams().get("attachmentUrl").toString());
+		}
+		else {
+			urlParameters.put("attachmentUrl", "NO_URL");
+			LOGGER.info("No attachment url available, only "+ String.join(", ", integration.getParams().getParams().keySet()));
+		}
+
 		return urlParameters;
 	}
 }
