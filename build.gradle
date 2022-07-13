@@ -24,13 +24,24 @@ targetCompatibility = JavaVersion.VERSION_11
 
 repositories {
     mavenCentral()
-    releaseMode ? maven { url "http://dl.bintray.com/epam/reportportal" } : maven { url 'https://jitpack.io' }
-
+    if (releaseMode) {
+        dependencyRepos.forEach { path ->
+            maven {
+                setUrl("https://maven.pkg.github.com/reportportal/${path}")
+                credentials {
+                    username = findProperty("githubUserName")
+                    password = findProperty("githubToken")
+                }
+            }
+        }
+    } else {
+        maven { url 'https://jitpack.io' }
+    }
 }
 
 dependencyManagement {
     imports {
-        mavenBom(releaseMode ? 'com.epam.reportportal:commons-bom:' + getProperty('bom.version')  : 'com.github.reportportal:commons-bom:4b7ed8a')
+        mavenBom(releaseMode ? 'com.epam.reportportal:commons-bom:' + getProperty('bom.version') : 'com.github.reportportal:commons-bom:5.7.0')
     }
 }
 
@@ -41,8 +52,8 @@ dependencies {
         annotationProcessor 'com.epam.reportportal:plugin-api'
 
     } else {
-        implementation 'com.github.reportportal:plugin-api:8fe626d'
-        annotationProcessor 'com.github.reportportal:plugin-api:8fe626d'
+        implementation 'com.github.reportportal:plugin-api:5.7.0'
+        annotationProcessor 'com.github.reportportal:plugin-api:5.7.0'
     }
 
     compile 'net.oauth.core:oauth:20090617'
