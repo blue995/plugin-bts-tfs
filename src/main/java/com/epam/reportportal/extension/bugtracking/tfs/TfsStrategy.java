@@ -59,12 +59,12 @@ public class TfsStrategy implements ReportPortalExtensionPoint, BtsExtension {
 
 	@Override
 	public CommonPluginCommand getCommonCommand(String commandName) {
-		throw new UnsupportedOperationException("Not working with commands");
+		return null;
 	}
 
 	@Override
 	public PluginCommand getIntegrationCommand(String commandName) {
-		throw new UnsupportedOperationException("Not working with commands");
+		return null;
 	}
 
 	@Override
