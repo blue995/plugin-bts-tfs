@@ -1,6 +1,7 @@
 plugins {
     id "io.spring.dependency-management" version "1.1.7"
     id 'java'
+    id 'java-library'
     id 'jacoco'
 }
 
@@ -52,7 +53,7 @@ dependencies {
         annotationProcessor 'com.epam.reportportal:plugin-api'
     }
     implementation 'org.hibernate.orm:hibernate-core:6.6.5.Final'
-
+    implementation 'org.apache.httpcomponents:httpclient:4.5.14'
     implementation 'com.rallydev.rest:rally-rest-api:2.2.1'
 
     testImplementation "org.junit.jupiter:junit-jupiter-params"
